@@ -32,7 +32,7 @@ contract GatekeeperTwoTest is BaseTest {
     function test_Attack() public {
         vm.startBroadcast(deployer);
         solution = new Solution(contractAddress);
-        address entrant = address(uint160(uint256(vm.load(contractAddress,0))));
+        address entrant = address(uint160(uint256(vm.load(contractAddress,bytes32(uint256(0))))));
         assertEq(entrant, deployer);
         vm.stopBroadcast();
     }
