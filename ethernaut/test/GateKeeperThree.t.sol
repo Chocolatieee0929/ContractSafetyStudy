@@ -106,7 +106,7 @@ contract Self {
 }
 
 contract GatekeeperThreeTest is BaseTest {
-    GatekeeperThree gatekeeperThree = GatekeeperThree(contractAddress);
+    GatekeeperThree gatekeeperThree = GatekeeperThree(payable(contractAddress));
     // GatekeeperThree gatekeeperThree = new GatekeeperThree();
 
     function run() external {
