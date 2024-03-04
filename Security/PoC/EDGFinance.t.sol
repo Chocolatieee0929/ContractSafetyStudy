@@ -27,7 +27,7 @@ address constant egd = 0x202b233735bF743FA31abb8f71e641970161bF98;
 event log_named_decimal_uint(string name, uint256 balance, uint256 decimal);
 
 
-contract ContractTest is Test { // 模拟攻击
+contract EDGFinancePoC is Test { // 模拟攻击
     
     function setUp() public {
         vm.createSelectFork("bsc", 20_245_522);
