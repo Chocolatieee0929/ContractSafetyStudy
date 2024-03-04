@@ -1,2 +1,8 @@
 
 .vscode/
+*node_modules/
+DeFi*/
+*lib/
+*cache/
+*out/
+*.env

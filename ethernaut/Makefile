@@ -23,8 +23,6 @@ update:; forge update
 
 build:; forge build
 
-test :; forge test 
-
 snapshot :; forge snapshot
 
 format :; forge fmt
@@ -37,8 +35,11 @@ ifeq ($(ARGS),--network sepolia)
     NETWORK_ARGS := --rpc-url $(SEPOLIA_RPC_URL) --private-key $(PRIVATE_KEY) --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
 endif
 
+test:
+	@forge test --mp $(f) --fork-url ${SEPOLIA_RPC_URL} -vvvv
+
 smulate:
-	@forge script $(f) --fork-url ${SEPOLIA_RPC_URL} --tc Solution -vvvv
+	@forge script $(f) --fork-url ${SEPOLIA_RPC_URL} -vvvv
 
 attack:
 	@forge script $(f) --rpc-url ${SEPOLIA_RPC_URL} --tc Solution --private-key ${PRIVATE_KEY} --broadcast
