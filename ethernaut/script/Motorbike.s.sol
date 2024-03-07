@@ -3,7 +3,7 @@ pragma solidity ^0.6.2;
 pragma experimental ABIEncoderV2;
 
 import "./BaseScript.s.sol";
-import { console2 } from "forge-std/console2.sol";
+import {console2} from "forge-std/console2.sol";
 
 interface IEngine {
     function initialize() external;
@@ -26,7 +26,8 @@ contract Solution is BaseScript {
     address public contractAdd = 0xD0333097b58238552E591cAc72a0077dbfaEd315;
 
     IEngine engineAddress = IEngine(address(uint160(uint256(vm.load(contractAdd, _IMPLEMENTATION_SLOT)))));
-    function run() external{
+
+    function run() external {
         vm.startBroadcast(deployer);
 
         att = new Attack();

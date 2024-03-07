@@ -3,12 +3,12 @@ pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 import "./BaseScript.s.sol";
-import { console2 } from "forge-std/console2.sol";
+import {console2} from "forge-std/console2.sol";
 
 import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 interface DelegateERC20 {
-  function delegateTransfer(address to, uint256 value, address origSender) external returns (bool);
+    function delegateTransfer(address to, uint256 value, address origSender) external returns (bool);
 }
 
 interface IDetectionBot {
@@ -37,24 +37,24 @@ interface IDoubleEntryPoint {
 }
 
 contract Forta is IForta {
-  mapping(address => IDetectionBot) public usersDetectionBots;
-  mapping(address => uint256) public botRaisedAlerts;
+    mapping(address => IDetectionBot) public usersDetectionBots;
+    mapping(address => uint256) public botRaisedAlerts;
 
-  function setDetectionBot(address detectionBotAddress) external override {
-      usersDetectionBots[msg.sender] = IDetectionBot(detectionBotAddress);
-  }
+    function setDetectionBot(address detectionBotAddress) external override {
+        usersDetectionBots[msg.sender] = IDetectionBot(detectionBotAddress);
+    }
 
-  function notify(address user, bytes calldata msgData) external override {
-    if(address(usersDetectionBots[user]) == address(0)) return;
-    try usersDetectionBots[user].handleTransaction(user, msgData) {
-        return;
-    } catch {}
-  }
+    function notify(address user, bytes calldata msgData) external override {
+        if (address(usersDetectionBots[user]) == address(0)) return;
+        try usersDetectionBots[user].handleTransaction(user, msgData) {
+            return;
+        } catch {}
+    }
 
-  function raiseAlert(address user) external override {
-      if(address(usersDetectionBots[user]) != msg.sender) return;
-      botRaisedAlerts[msg.sender] += 1;
-  } 
+    function raiseAlert(address user) external override {
+        if (address(usersDetectionBots[user]) != msg.sender) return;
+        botRaisedAlerts[msg.sender] += 1;
+    }
 }
 
 contract DetectionBot is IDetectionBot {
@@ -70,11 +70,11 @@ contract DetectionBot is IDetectionBot {
         IForta(forta).setDetectionBot(address(this));
     }
 
-    function handleTransaction(address user, bytes calldata msgData) external{
-        (address to,,address origSender) = abi.decode(msgData[4:],(address, uint256, address));
+    function handleTransaction(address user, bytes calldata msgData) external {
+        (address to,, address origSender) = abi.decode(msgData[4:], (address, uint256, address));
         console2.log("to", to);
         // valut 调用DET的delegateTransfer
-        if(origSender == vault) {
+        if (origSender == vault) {
             IForta(forta).raiseAlert(user);
         }
     }
@@ -92,7 +92,7 @@ contract Solution is BaseScript {
 
         legacyToken.owner is not deployer
          */
-        
+
         vm.startBroadcast(deployer);
         DetectionBot bot = new DetectionBot(cryptoVault, forta);
         IForta(forta).setDetectionBot(address(bot));

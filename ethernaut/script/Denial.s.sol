@@ -3,7 +3,7 @@ pragma solidity >=0.6.2;
 pragma experimental ABIEncoderV2;
 
 import "./BaseScript.s.sol";
-import {Script,console2} from "forge-std/Script.sol";
+import {Script, console2} from "forge-std/Script.sol";
 
 interface IDenial {
     function withdraw() external;
@@ -27,7 +27,6 @@ contract Solution {
 }
 
 contract DenialScript is BaseScript {
-
     Solution public solution;
 
     function setUp() public override {

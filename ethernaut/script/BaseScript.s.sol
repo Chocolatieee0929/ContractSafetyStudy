@@ -7,10 +7,9 @@ import {Script} from "forge-std/Script.sol";
 abstract contract BaseScript is Script {
     address internal deployer;
     address internal contractAddress;
-    string internal mnemonic;
 
     function setUp() public virtual {
-       deployer = vm.envAddress("DEPLOYER_ADDRESS");
+        deployer = vm.envAddress("SEPOIA_DEPLOYER");
     }
 
     modifier broadcaster() {
