@@ -10,7 +10,7 @@ abstract contract BaseScript is Script {
     string internal mnemonic;
 
     function setUp() public virtual {
-       deployer = vm.envAddress("DEPLOYER_ADDRESS");
+        deployer = vm.envAddress("DEPLOYER_ADDRESS");
     }
 
     modifier broadcaster() {

