@@ -10,7 +10,7 @@ abstract contract BaseTest is Test {
     string internal mnemonic;
 
     function setUp() public virtual {
-       deployer = vm.envAddress("SEPOIA_DEPLOYER");
+        deployer = vm.envAddress("SEPOIA_DEPLOYER");
     }
 
     modifier broadcaster() {

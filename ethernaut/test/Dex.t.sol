@@ -5,13 +5,12 @@ pragma experimental ABIEncoderV2;
 import {BaseTest} from "test/utils/BaseTest.t.sol";
 import {console2} from "forge-std/console2.sol";
 
-
 interface IDex {
     function token1() external returns (address);
     function token2() external returns (address);
-    function swap(address from, address to, uint amount) external;
-    function getSwapPrice(address from, address to, uint amount) external view returns(uint);
-    function approve(address spender, uint amount) external;
+    function swap(address from, address to, uint256 amount) external;
+    function getSwapPrice(address from, address to, uint256 amount) external view returns (uint256);
+    function approve(address spender, uint256 amount) external;
 }
 
 interface ISwappableToken {
@@ -20,7 +19,6 @@ interface ISwappableToken {
 }
 
 contract DexTest is BaseTest {
-
     function test_Attack() public {
         ISwappableToken token1 = ISwappableToken(IDex(contractAddress).token1());
         ISwappableToken token2 = ISwappableToken(IDex(contractAddress).token2());

