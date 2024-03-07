@@ -1,8 +1,17 @@
-
-.vscode/
-*node_modules/
-DeFi*/
-*lib/
+# Compiler files
 *cache/
 *out/
+.vscode/
+package-lock.json
+
+# Ignores development broadcast logs
+broadcast/
+*lib/
+node_modules/
+
+# Docs
+docs/
+DeFi*/
+
+# Dotenv file
 *.env
