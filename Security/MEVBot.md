@@ -166,3 +166,9 @@ contract MEVBotPoC is Test { // 模拟攻击
     function swap(uint256 amount0Out, uint256 amount1Out, address to, bytes calldata data) public {}
 }
 ```
+# 题外话`abi.encodePacked`
+`abi.encodePacked()` 函数用于将多个参数打包成一个字节数组。它将参数按照顺序进行编码，并返回一个包含编码后的字节数组的字节数组，它并不会在参数之间进行填充，只是简单地将参数拼接在一块。
+
+这里就会有一个问题，攻击者能够哈希碰撞利用伪造交易或执行其他恶意操作。例如，如果攻击者知道合约使用abi.encodePacked来编码交易数据，他们可以构造一个具有相同哈希值的交易，从而欺骗合约。
+
+为了避免这种情况，用abi.encode来编码交易数据，因为它会在每个参数之间添加填充，以确保每个参数占用32个字节。这可以防止哈希碰撞，并提高智能合约的安全性。
