@@ -22,15 +22,33 @@
 
 ## 攻击过程
 
-首先，我一开始想通过`cast run 0xd48758ef48d113b78a09f7b8c7cd663ad79e9965852e872fdfc92234c3e598d2 --quick --rpc-url https://rpc.ankr.com/bsc` 来追踪函数，出现报错，报错信息如下，该 rpc 节点不是归档节点，在此节点上无法找到交易信息，在网络检索后，未找到 bsc 归档节点，后续找着了会再更新。
+首先，我们对此次攻击交易进行函数追踪，有两种方式，
 
-```
-2024-03-08T04:06:25.766109Z ERROR foundry_evm_core::fork::init: It looks like you're trying to fork from an older block with a non-archive node which is not supported. Please try to change your RPC url to an archive node if the issue persists.
-- Error:
-Could not instantiate forked environment with fork url: https://rpc.ankr.com/bsc
-```
-
-我们选择通过使用 [phalcon](https://phalcon.blocksec.com/explorer/tx/bsc/0xd48758ef48d113b78a09f7b8c7cd663ad79e9965852e872fdfc92234c3e598d2) 来查看攻击交易的函数调用，![MEVBot(BNB484)-call-1](<./picture/MEVBot(BNB484)-call-1.png>)
+通过cast run tx --quick --rpc-url https://rpc.ankr.com/bsc 来追踪函数，
+root@ChocolatierThi:~/ContractSafetyStudy# cast run 0xd48758ef48d113b78a09f7b8c7cd663ad79e9965852e872fdfc92234c3e598d2 --quick --rpc-url https://rpc.ankr.com/bsc
+Traces:
+  [311693] 0x5cB11ce550a2E6c24EBFC8DF86C5757b596e69c1::bbb()
+    ├─ [2531] 0x55d398326f99059fF775485246999027B3197955::balanceOf(0x64dD59D6C7f09dc05B472ce5CB961b6E10106E1d) [staticcall]
+    │   └─ ← 0x00000000000000000000000000000000000000000000057cbe656f5e0c7507f9
+    ├─ [41915] 0x64dD59D6C7f09dc05B472ce5CB961b6E10106E1d::pancakeCall(0x5cB11ce550a2E6c24EBFC8DF86C5757b596e69c1, 25912948173777791158265 [2.591e22], 0, 0x000000000000000000000000ee286554f8b315f0560a15b6f085ddad616d060100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000)
+    │   ├─ [522] 0x5cB11ce550a2E6c24EBFC8DF86C5757b596e69c1::token0() [staticcall]
+    │   │   └─ ← 0x00000000000000000000000055d398326f99059ff775485246999027b3197955
+    │   ├─ [27971] 0x55d398326f99059fF775485246999027B3197955::transfer(0xEE286554F8b315F0560A15b6f085dDad616D0601, 25912948173777791158265 [2.591e22])
+    │   │   ├─ emit Transfer(param0: 0x64dD59D6C7f09dc05B472ce5CB961b6E10106E1d, param1: 0xEE286554F8b315F0560A15b6f085dDad616D0601, param2: 25912948173777791158265 [2.591e22])
+    │   │   └─ ← 0x0000000000000000000000000000000000000000000000000000000000000001
+    │   ├─ [0] 0xEE286554F8b315F0560A15b6f085dDad616D0601::swap(0, 0, 0x64dD59D6C7f09dc05B472ce5CB961b6E10106E1d, 0x)
+    │   │   └─ ← ()
+    │   ├─ [566] 0x5cB11ce550a2E6c24EBFC8DF86C5757b596e69c1::token1() [staticcall]
+    │   │   └─ ← 0x00000000000000000000000055d398326f99059ff775485246999027b3197955
+    │   ├─ [5271] 0x55d398326f99059fF775485246999027B3197955::transfer(0x5cB11ce550a2E6c24EBFC8DF86C5757b596e69c1, 0)
+    │   │   ├─ emit Transfer(param0: 0x64dD59D6C7f09dc05B472ce5CB961b6E10106E1d, param1: 0x5cB11ce550a2E6c24EBFC8DF86C5757b596e69c1, param2: 0)
+    │   │   └─ ← 0x0000000000000000000000000000000000000000000000000000000000000001
+    │   ├─ [3271] 0x55d398326f99059fF775485246999027B3197955::transfer(0x64dD59D6C7f09dc05B472ce5CB961b6E10106E1d, 0)
+    │   │   ├─ emit Transfer(param0: 0x64dD59D6C7f09dc05B472ce5CB961b6E10106E1d, param1: 0x64dD59D6C7f09dc05B472ce5CB961b6E10106E1d, param2: 0)
+    │   │   └─ ← 0x0000000000000000000000000000000000000000000000000000000000000001
+    │   └─ ← ()
+    |    ... ... 
+通过使用[phalcon](https://phalcon.blocksec.com/explorer/tx/bsc/0xd48758ef48d113b78a09f7b8c7cd663ad79e9965852e872fdfc92234c3e598d2) 来查看攻击交易的函数调用，![MEVBot(BNB484)-call-1](<./picture/MEVBot(BNB484)-call-1.png>)
 发现调用了 6 次`pancakeCall`，分别是 BSC-USD、WBNB、BUSD、USDC、BTCB、ETH，我们对其中一次进行展开，可以发现在调用`pancakeCall(_sender,_amount0,_amount1,_data)`时都进行了转账，向 Attacker Address 赚了\_amount0 数额的代币，我们找着了漏洞存在 Vulnerable Address 的`pancakeCall`函数里。
 我们在[BscScan](https://bscscan.com/address/0x64dd59d6c7f09dc05b472ce5cb961b6e10106e1d#code)查看受害合约，发现未开源，使用反编译工具解析 Dedaub 解析被攻击合约，解析出来的没有`pancakeCall`，在`function_selector`这块看到了 pancakeCall 的函数选择器，我发现最后都会执行一个 0x10a 的函数，我采取了和教程一样的步骤，暂时未找到反编译结果不一样是由什么导致的。
 ![MEVBot(BNB484)-dedaub](<Security/picture/MEVBot(BNB484)-dedaub.png>)
