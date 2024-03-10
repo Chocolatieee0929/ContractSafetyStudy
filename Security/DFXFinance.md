@@ -3,6 +3,12 @@
 在学习区块链安全时最先了解的便是重入攻击，为了进一步了解现实生活中重入如何发生的，我将跟随[教程](https://github.com/SunWeb3Sec/DeFiHackLabs/tree/main/academy/onchain_debug/06_write_your_own_poc)分析 DFXFinance 重入攻击事件，我会将分析思路详细地记录下来，同时使用 foundry 框架进行测试。
 大家可以通过阅读我之前写的[Re-entrancy attack](https://lori-blockchain.notion.site/Re-entrancy-attack-e5c416cce9e54846938ff32e9ecd451c?pvs=4) 的文章来对重入攻击有个初步的了解。
 
+# 跨函数重入
+
+- 跨函数重入是指在不同的函数之间发生的重入攻击。这种攻击方式通常是通过在合约中调用其他合约的函数，从而实现重入。
+- 这种攻击方式可以绕过合约中的安全检查，从而实现恶意操作。
+- 为了防止跨函数重入攻击，合约开发者应该谨慎处理合约中的函数调用，避免在回调函数中调用其他合约的函数。同时，可以使用防止重入的库函数来提高合约的安全性。
+  
 # 攻击过程分析
 
 ## 基本信息
