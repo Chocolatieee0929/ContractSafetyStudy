@@ -36,6 +36,7 @@ contract Exchange is ReentrancyGuard {
         if (amountPaidInWei == 0) revert ValueMustBeGreaterThanZero();
 
         // Price should be in [wei / NFT]
+        // 通过预言机获取价格
         uint256 currentPriceInWei = oracle.getMedianPrice(token.symbol());
         if (amountPaidInWei < currentPriceInWei) revert AmountPaidIsNotEnough();
 
@@ -55,6 +56,7 @@ contract Exchange is ReentrancyGuard {
         }
 
         // Price should be in [wei / NFT]
+        // 通过预言机获取价格
         uint256 currentPriceInWei = oracle.getMedianPrice(token.symbol());
         if (address(this).balance < currentPriceInWei) {
             revert NotEnoughETHInBalance();
