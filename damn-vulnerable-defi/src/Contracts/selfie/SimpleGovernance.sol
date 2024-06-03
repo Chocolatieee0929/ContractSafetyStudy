@@ -19,7 +19,7 @@ contract SimpleGovernance {
         uint256 executedAt;
     }
 
-    DamnValuableTokenSnapshot public governanceToken;
+    DamnValuableTokenSnapshot public governanceToken; // 治理代币
 
     mapping(uint256 => GovernanceAction) public actions;
     uint256 private actionCounter;
