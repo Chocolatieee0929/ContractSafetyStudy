@@ -72,7 +72,7 @@ contract Compromised is Test {
         console.log(unicode"🧨 Let's see if you can break it... 🧨");
     }
 
-    function testExploit() public {
+    function testExploit_compromised() public {
         uint256 privateKey1 = 0xc678ef1aa456da65c6fc5861d44892cdfac0c6c8c2560bf0c9fbcdae2f4735a9;
         uint256 privateKey2 = 0x208242c40acdfa9ed889e685c23547acbed9befc60371e9875fbcd736340bb48;
         address[2] memory sources = [vm.rememberKey(privateKey1), vm.rememberKey(privateKey2)];
