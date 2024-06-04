@@ -8,9 +8,9 @@
 - [x] 4 Side Entrance
 - [x] 5 The Rewarder
 - [X] 6 Selfie
-- [ ] 7 Compromised
-- [ ] 8 Puppet
-- [ ] 9 Puppet V2
+- [X] 7 Compromised
+- [X] 8 Puppet
+- [X] 9 Puppet V2
 - [ ] 10 Free Rider
 - [ ] 11 Backdoor
 - [ ] 12 Climber

