@@ -2,8 +2,7 @@
 pragma solidity ^0.8.10;
 
 import "forge-std/Test.sol";
-import "forge-std/StdCheats.sol";
-import '@openzeppelin/contracts//token/ERC20/IERC20.sol';
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 
 // @KeyInfo - Total Lost : ~36,044 US$
