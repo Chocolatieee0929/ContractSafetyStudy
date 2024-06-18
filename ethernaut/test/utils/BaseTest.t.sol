@@ -10,7 +10,12 @@ abstract contract BaseTest is Test {
     string internal mnemonic;
 
     function setUp() public virtual {
-        deployer = vm.envAddress("SEPOIA_DEPLOYER");
+
+        deployer = vm.remeberKey(vm.envUint("PRIVATE_KEY"));
+        vm.label(deployer, "Deployer");
+        
+        uint256 forkId = vm.createFork(vm.envString("SEPOLIA_RPC_URL"));
+        vm.selectFork(forkId);
     }
 
     modifier broadcaster() {
