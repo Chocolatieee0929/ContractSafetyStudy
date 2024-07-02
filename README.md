@@ -10,6 +10,9 @@
 
 我的Notion地址：https://lori-blockchain.notion.site/Lori-b62d3531f44f467baa56ddb161f0ef3e?pvs=4
 
+## other
+1. [paradigm-ctf-2023 solution(foudry edition)](https://github.com/Chocolatieee0929/paradigm-ctf-2023) 后续会更新题解，请关注
+
 # About Lori
 
 Hello everyone, I'm Lori. I specialize in blockchain security. Here are some of the works I completed during my master's program:
